@@ -1,0 +1,99 @@
+﻿@page "/user/{id:int}"
+@using System.Text.Json
+@inject IUserService<UserDto,UserCreateDto, UserUpdateDto> UserService
+@inject IUserBadgeService<UserBadgeDto,UserBadgeCreateDto> userBadgeService
+@inject IBadgeService<BadgeDto,BadgeCreateDto,BadgeUpdateDto> BadgeService
+@inject IMapper Mapper
+@inject NavigationManager NavigationManager
+
+<div class="d-flex p-5">
+    <PageTitle>Edit @editUser.Name @editUser.Surname account </PageTitle>
+    <EditForm Model="@editUser" class="d-flex px-5 flex-column w-50 justify-content-center" OnValidSubmit="HandleEditSubmit" FormName="EditUser">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+        <h3>Edit @editUser.Name @editUser.Surname</h3>
+        <div>
+            <label>Name</label>
+            <InputText @bind-Value="editUser.Name" class="form-control"></InputText>
+        </div>
+        <div>
+            <label>Surname</label>
+            <InputText @bind-Value="editUser.Surname" class="form-control"></InputText>
+        </div>
+        <div>
+            <label>Email</label>
+            <InputText @bind-Value="editUser.Email" class="form-control"></InputText>
+        </div>
+        <div>
+            <label>Password</label>
+            <InputText @bind-Value="editUser.Password" class="form-control" type="password">
+            </InputText>
+        </div>
+        <div>
+            <label>Age</label>
+            <InputNumber @bind-Value="editUser.Age" class="form-control"></InputNumber>
+        </div>
+        <br />
+
+        <button type="submit" class="btn btn-primary">Update User Info</button>
+
+    </EditForm>
+   <div class="d-flex flex-column px-5 w-50">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Photo</th>
+                    <th>Title</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var badge in userBadges)
+                {
+                    <tr>
+                        <td>
+                            <img class="w-50" src="http://localhost:5204/images/@badge.Photo" />
+                        </td>
+                        <td>@badge.Title</td>
+                        <td>@badge.Description</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public int? Id { get; set; }
+    List<BadgeDto> userBadges = new List<BadgeDto>();
+    UserDto editUser { get; set; } = new UserDto();
+    protected override async Task OnInitializedAsync()
+    {
+        if (Id is not null)
+        {
+            var badges = await BadgeService.GetBadges();
+            var UserBadges = await userBadgeService.GetUserBadges();
+            var bdg = UserBadges.Where(b => b.UserId == Id);
+            var badgeIds = bdg.Select(b => b.BadgeId).ToList();
+            userBadges = badges.Where(b => badgeIds.Contains(b.Id)).ToList();
+            var result = await UserService.GetUserById((int)Id);
+            if (result is not null)
+            {
+                editUser = Mapper.Map<UserDto>(result);
+                Console.WriteLine(JsonSerializer.Serialize(editUser));
+            }
+            else
+            {
+                NavigationManager.NavigateTo("/user/register");
+            }
+        }
+    }
+    async Task HandleEditSubmit()
+    {
+        Console.WriteLine(JsonSerializer.Serialize(editUser));
+        await UserService.UpdateUser(editUser);
+        NavigationManager.NavigateTo($"/user/{Id}",true);
+        Console.WriteLine("Updated successfully");
+    }
+}

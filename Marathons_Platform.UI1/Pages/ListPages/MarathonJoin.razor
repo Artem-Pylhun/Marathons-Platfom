@@ -1,0 +1,165 @@
+﻿@page "/marathon/{id:int}"
+@using System.Text.Json
+@inject IMarathonService<MarathonDto,MarathonCreateDto, MarathonUpdateDto> MarathonService
+@inject IExerciseService<ExerciseDto,ExerciseCreateDto, ExerciseUpdateDto> ExerciseService
+@inject IProgressService<ProgressDto,ProgressCreateDto,ProgressAddDto> ProgressService
+@inject IUserRoleInMarathon<UserRoleInMarathonDto, UserRoleInMarathonCreateDto> UrinService
+@inject IUserExerciseStatusService<UserExerciseStatusesDto, UserExerciseStatusesCreateDto> uesService
+@inject AuthService authService
+@inject IMapper _mapper
+@inject NavigationManager navigationManager
+
+<PageTitle>@mar.Title</PageTitle>
+<div class="d-flex flex-row">
+    <div class="d-flex ">
+        <nav class="navclass">
+           
+                <ul class="d-flex flex-column">
+                    @foreach (var ex in exercisesInMar)
+                    {
+                        <a class="btn-outline-dark" href="/marathon/@mar.Id/@ex.Id">
+                        <h4>Day @ex.DayNum</h4>
+                        </a>
+                    }
+                </ul>
+        </nav>
+    </div>
+    <div class="d-flex">
+        <h1 class="text-center p-5">Choose your exercise of @mar.Title marathon</h1>
+    </div>
+</div>
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        outline: 0;
+        border: none;
+        text-decoration: none;
+        box-sizing: border-box;
+    }
+
+    nav .exe a h4,
+    nav .exe a span {
+        visibility: hidden;
+    }
+
+    ul {
+        padding-left: 0px;
+    }
+
+    a {
+        text-decoration: none;
+        overflow: hidden;
+        display: table-cell;
+    }
+
+    nav:hover span {
+        visibility: visible;
+        animation-delay: 0.3s;
+    }
+
+    li {
+        text-align: center;
+    }
+
+    nav {
+        positions: fixed;
+        top: 0;
+        bottom: 0;
+        height: 100vh;
+        background: #fff;
+        width: 90px;
+        box-shadow: 0 20px 35px rgba(0, 0, 0, 0.1);
+    }
+
+        nav .exe a:hover h4,
+        nav .exe a:hover span {
+            visibility: visible;
+            animation: animate__fadeIn 0.3s ease;
+        }
+</style>
+@code{
+    [Parameter]
+    public int? Id { get; set;}
+    [Parameter]
+    public int? Daynum{ get; set; }
+    int userId = 0;
+    public List<UserRoleInMarathonDto> urinList = new List<UserRoleInMarathonDto>();
+    public UserRoleInMarathonDto urin = new UserRoleInMarathonDto();
+    MarathonDto mar{get; set;} = new MarathonDto(); 
+
+    List<ExerciseDto> exercisesInMar {get; set;} = new List<ExerciseDto>();
+    Dictionary<int, List<string>> userRoles = new Dictionary<int, List<string>>();
+    protected override async Task OnInitializedAsync()
+    {
+        if (await authService.IsUserAuthenticated() == true)
+        {
+            userId = await authService.GetUserId();
+            exercisesInMar = await ExerciseService.GetExercisesByMarathonId((int)Id);
+            urinList = await UrinService.GetUserRolesInMarathon();
+            if (urinList.Any(u => u.MarathonId == Id && u.UserId == userId))
+            {
+                urin = urinList.FirstOrDefault(u => u.MarathonId == Id && u.UserId == userId); 
+            }
+            else
+            {
+                urin.RoleId = 0;
+            }
+            foreach (var task in exercisesInMar)
+            {
+                await uesService.GetStatusByUserAndExerciseId(userId, task.Id);
+            }
+            await CheckIfJoined((int)Id);
+        }
+        else
+        {
+            navigationManager.NavigateTo("/user/login");
+            Console.WriteLine("Unauthorised");
+        }
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (Id is not null)
+        {
+            var result = await MarathonService.GetMarathonById((int)Id);
+            if (result is not null)
+            {
+                mar = _mapper.Map<MarathonDto>(result);
+
+            }
+        }
+    }
+    async Task CheckIfJoined(int Id)
+    {
+        if (urin.RoleId == 1 || urin.RoleId == 2 || urin.RoleId == 3 )
+        {
+            Console.WriteLine("User found");
+        }
+        else
+        {
+            await UrinService.AddUserRolesInMarathon(new UserRoleInMarathonCreateDto
+                    {
+                    UserId = userId,
+                    RoleId = 1,
+                MarathonId = Id
+            });
+            await ProgressService.AddProgress(new ProgressCreateDto
+                    {
+                    UserId = userId,
+                    MarathonId = Id,
+                    Percent = 0
+                });
+            for(int i = 0; i <= exercisesInMar.Count()-1; i++)
+            {
+                await uesService.AddExerciseStatus(new UserExerciseStatusesCreateDto
+                    {
+                        UserId = userId,
+                        ExerciseId = exercisesInMar[i].Id
+                    });
+            }
+            Console.WriteLine($"Joined to marathon {Id} successfully");
+        }
+    }
+
+}

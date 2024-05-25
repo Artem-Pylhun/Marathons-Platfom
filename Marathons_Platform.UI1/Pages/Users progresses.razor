@@ -1,0 +1,71 @@
+﻿@page "/progresses"
+@inject AuthService authService
+@inject IMarathonService<MarathonDto, MarathonCreateDto, MarathonUpdateDto> marathonService
+@inject IProgressService<ProgressDto, ProgressCreateDto, ProgressAddDto>  progressService
+@inject NavigationManager navManager
+<div class="d-flex flex-column align-items-center justify-content-center">
+    <h3 class="text-center p-3">User's Progresses</h3>
+    <ul>
+        @foreach (var pr in progresses)
+        {
+            <li>
+                <strong>Marathon:</strong> @marathons.FirstOrDefault(m => m.Id == pr.MarathonId).Title
+                <div class="progress">
+                    <div class="progress-bar" role="progressbar" style="width: @pr.Percent%">
+                        @pr.Percent% Complete
+                    </div>
+                </div>
+            </li>
+        }
+    </ul>
+</div>
+
+<style>
+    .progress {
+        height: 20px;
+        margin-top: 5px;
+    }
+
+    .progress-bar {
+        background-color: #4CAF50; /* Green */
+        color: white;
+        text-align: center;
+        line-height: 20px; /* same as height of progress bar */
+    }
+</style>
+
+@code {
+    List<ProgressDto> progresses { get; set; } = new List<ProgressDto>();
+    int userId = 0;
+    List<MarathonDto> marathons { get; set; } = new List<MarathonDto>();
+
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        if (await authService.IsUserAuthenticated())
+        {
+            marathons = await marathonService.GetMarathons();
+            var progress = await progressService.GetProgresses();
+            userId = await authService.GetUserId();
+            progresses = progress.Where(pr => pr.UserId == userId).ToList();
+
+        }
+        else
+        {
+            Console.WriteLine("Not authorized");
+            navManager.NavigateTo("user/login");
+        }
+
+      
+
+    }
+
+    private async Task<string> GetMarathonTitle(int marathonId)
+    {
+
+        var marathon = await marathonService.GetMarathonById(marathonId);
+
+        return marathon.Title;
+    }
+}

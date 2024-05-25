@@ -1,0 +1,72 @@
+﻿@page "/role/get-all"
+@inject IMarathonService<MarathonDto, MarathonCreateDto, MarathonUpdateDto> MarathonService
+@inject IUserService<UserDto,UserCreateDto, UserUpdateDto> UserService
+@inject AuthService authService
+@inject IRoleService<RoleDto, RoleCreateDto> RoleService
+@inject IUserRoleInMarathon<UserRoleInMarathonDto, UserRoleInMarathonCreateDto> urinService
+@inject NavigationManager navigationManager
+<link href="~/bootstrap/bootstrap.min.css">
+
+<h3 class="d-flex justify-content-center text-uppercase text-dark">Roles in Marathons</h3>
+<div class="mt-5 col-13 d-flex flex-wrap bg-dark justify-content-between px-5 py-3">
+    @foreach (var marathon in marathons)
+    {
+        <div class="row d-flex flex-column text-light col-lg-3 col-md-5 col-sm-9 mb-2 px-3 justify-content-around align-items-center">
+            <div>
+                <h4>@marathon.Title</h4>
+            </div>
+            <ul>
+                @foreach (var userGroup in userRolesInMarathon
+               .Where(ur => ur.MarathonId == marathon.Id)
+               .GroupBy(ur => ur.UserId))
+                {
+                    var user = users.FirstOrDefault(u => u.Id == userGroup.Key);
+
+                    <li>
+                        <p>User: @user.Name</p>
+                        <p>Roles: @string.Join(", ", userGroup.Select(ur => roles.First(r => r.Id == ur.RoleId).Title))</p>
+                    </li>
+                }
+            </ul>
+            <div class="d-flex">
+                <a class="btn btn-primary btn-sm" href="/rolesinmarathon/edit/@marathon.Id">Edit</a>
+                <a class="btn btn-danger btn-sm" href="/rolesinmarathon/delete/@marathon.Id">Delete</a>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    List<MarathonDto> marathons { get; set; } = new List<MarathonDto>();
+    List<RoleDto> roles { get; set; } = new List<RoleDto>();
+    List<UserDto> users { get; set; } = new List<UserDto>();
+    List<UserRoleInMarathonDto> userRolesInMarathon { get; set; } = new List<UserRoleInMarathonDto>();
+    Dictionary<int, List<string>> userRoles = new Dictionary<int, List<string>>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (await authService.IsUserAuthenticated())
+        {
+            userRoles = await authService.GetUserRoles();
+            bool isAdmin = userRoles.Any(role => role.Value.Contains("Admin"));
+
+            if (isAdmin)
+            {
+                marathons = await MarathonService.GetMarathons();
+                userRolesInMarathon = await urinService.GetUserRolesInMarathon();
+                roles = await RoleService.GetRoles();
+                users = await UserService.GetUsers();
+            }
+            else
+            {
+                Console.WriteLine("Not Admin");
+                navigationManager.NavigateTo("/forbid");
+            }
+        }
+        else
+        {
+            Console.WriteLine("Not authenticated");
+            navigationManager.NavigateTo("/notauth");
+        }
+    }
+}

@@ -1,0 +1,65 @@
+﻿@page "/marathonbadge/get-all"
+@inject IMarathonService<MarathonDto, MarathonCreateDto, MarathonUpdateDto> MarathonService
+@inject AuthService authService
+@inject IBadgeService<BadgeDto, BadgeCreateDto, BadgeUpdateDto> BadgeService
+@inject IBadgeMarathonService<BadgeMarathonDto, BadgeMarathonCreateDto> marBadgeService
+@inject NavigationManager navigationManager
+
+<link href="~/bootstrap/bootstrap.min.css">
+<h3 class="d-flex justify-content-center text-uppercase text-dark">User badges</h3>
+<div class="mt-5 col-13 d-flex flex-wrap bg-dark justify-content-between px-5 py-3">
+    @foreach (var mar in marathons)
+    {
+        <div class="row d-flex flex-column text-light col-lg-3 col-md-5 col-sm-9 mb-2 px-3 justify-content-around align-items-center">
+            <div>
+                <h4>@mar.Title</h4>
+            </div>
+            <ul>
+
+                @foreach (var marBadge in marBadges.Where(m => m.MarathonId == mar.Id))
+                {
+                    var badge = badges.FirstOrDefault(b => b.Id == marBadge.BadgeId);
+
+                    <li>
+                        <p>@badge.Title</p>
+                    </li>
+                }
+            </ul>
+        </div>
+    }
+</div>
+
+@code {
+    List<MarathonDto> marathons { get; set; } = new List<MarathonDto>();
+    List<BadgeDto> badges { get; set; } = new List<BadgeDto>();
+    List<BadgeMarathonDto> marBadges { get; set; } = new List<BadgeMarathonDto>();
+    Dictionary<int, List<string>> userRoles = new Dictionary<int, List<string>>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (await authService.IsUserAuthenticated())
+        {
+            userRoles = await authService.GetUserRoles();
+            bool isAdmin = userRoles.Any(role => role.Value.Contains("Admin"));
+
+            if (isAdmin)
+            {
+                marathons = await MarathonService.GetMarathons();
+                marBadges = await marBadgeService.GetBadgesMarathon();
+                badges = await BadgeService.GetBadges();
+
+            }
+            else
+            {
+                Console.WriteLine("Not Admin");
+                navigationManager.NavigateTo("/forbid");
+            }
+        }
+        else
+        {
+            Console.WriteLine("Not authenticated");
+            navigationManager.NavigateTo("/notauth");
+        }
+
+    }
+}

@@ -1,0 +1,158 @@
+﻿@using System.Text.Json
+@inherits LayoutComponentBase
+@inject AuthService authService
+@inject NavigationManager navigationManager
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+
+<div class="page">
+@*     <div class="sidebar">
+        <NavMenu />
+    </div> *@
+    <Navbar/>
+
+    
+    <main>
+          @if (isAdmin)
+            {
+            <ul class="main-item p-2">
+                <li>Admin
+                    <ul class="dropdown-menu">
+                        <li class="dropdown-submenu dropdown-item dropdown-toggle">
+                            Admin panel
+                            <ul class="dropdown-menu">
+                            <li class="dropdown-item">
+                                <a href="/theme/get-all">
+                                    <span class="nav-item no-bold animate__animated animate__fadeIn">
+                                        Themes
+                                    </span>
+                                </a>
+                            </li>
+                            <li class="dropdown-item">
+                                <a href="/user/get-all">
+                                    <span class="nav-item no-bold animate__animated animate__fadeIn">
+                                        Users
+                                    </span>
+                                </a>
+                            </li>
+                            <li class="dropdown-item">
+                                <a href="/badge/get-all">
+                                    <span class="nav-item no-bold animate__animated animate__fadeIn">
+                                        Badges
+                                    </span>
+                                </a>
+                            </li>
+                            <li class="dropdown-item">
+                                <a href="/progress/get-all">
+                                    <span class="nav-item no-bold animate__animated animate__fadeIn">
+                                        Progress
+                                    </span>
+                                </a>
+                            </li>
+                            <li class="dropdown-item">
+                                <a href="/marathonbadge/get-all">
+                                    <span class="nav-item no-bold animate__animated animate__fadeIn">
+                                        Marathon's badges
+                                    </span>
+                                </a>
+                            </li>
+                            <li class="dropdown-item">
+                                <a href="/role/get-all">
+                                    <span class="nav-item no-bold animate__animated animate__fadeIn">
+                                        Roles
+                                    </span>
+                                </a>
+                            </li>
+                            <li class="dropdown-item">
+                                <a href="/userbadge/get-all">
+                                    <span class="nav-item no-bold animate__animated animate__fadeIn">
+                                        UserBadges
+                                    </span>
+                                </a>
+                            </li>
+                            <li class="dropdown-item">
+                                    <a href="/marathon/add">
+                                    <span class="nav-item no-bold animate__animated animate__fadeIn">
+                                        Add marathon
+                                    </span>
+                                </a>
+                            </li> 
+                            <li class="dropdown-item">
+                                    <a href="/exercise/add">
+                                    <span class="nav-item no-bold animate__animated animate__fadeIn">
+                                        Add exercise
+                                    </span>
+                                </a>
+                            </li>
+                            </ul>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+            }
+
+            @Body
+    </main>
+    </div>
+<style>
+    li{
+        text-align: start;
+    }
+
+    .main-item {
+        list-style-type: none;
+    }
+
+        .main-item li:hover > ul.dropdown-menu {
+            display: block;
+        }
+
+    .dropdown-submenu {
+        position: relative;
+    }
+
+        .dropdown-submenu > .dropdown-menu {
+            top: 0;
+            left: 100%;
+            margin-top: -6px;
+        }
+
+    .dropdown-item {
+        padding: 0.5rem;
+        cursor: pointer;
+        background-color: #fff;
+        color: #6c757d;
+        border-color: #6c757d;
+    }
+
+        .dropdown-item:hover {
+            background-color: #6c757d;
+            border-color: #6c757d;
+            color: #fff;
+        }
+</style>
+@code{
+    Dictionary<int, List<string>> userRoles = new Dictionary<int, List<string>>();
+    bool isAdmin { get; set; }
+    protected override async Task OnInitializedAsync()
+    {
+        if (await authService.IsUserAuthenticated())
+        {
+            userRoles = await authService.GetUserRoles();
+            Console.WriteLine(JsonSerializer.Serialize(userRoles));
+            isAdmin = userRoles.Any(role => role.Value.Contains("Admin"));
+
+            if (isAdmin)
+            {
+
+            }
+            else
+            {
+                Console.WriteLine("Not enough access");
+            }
+        }
+        else
+        {
+            Console.WriteLine("Not authorized");
+        }
+    }
+}

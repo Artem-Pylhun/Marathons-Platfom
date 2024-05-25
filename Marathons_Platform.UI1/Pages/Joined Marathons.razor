@@ -1,0 +1,45 @@
+﻿@page "/joined-marathon"
+@inject AuthService authService
+@inject NavigationManager navManager
+@inject IUserRoleInMarathon<UserRoleInMarathonDto, UserRoleInMarathonCreateDto> userRoleInMarathonService
+@inject IMarathonService<MarathonDto, MarathonCreateDto, MarathonUpdateDto> marathonService
+
+<h3 class="text-center p-3">Joined Marathons</h3>
+
+<div class="d-flex flex-column align-items-center justify-content-center">
+    <ul>
+        @foreach (var marathon in marathons)
+        {
+            <li>
+                <strong>Marathon:</strong> @marathon.Title
+            </li>
+        }
+    </ul>
+</div>
+
+@code {
+    List<MarathonDto> marathons = new List<MarathonDto>();
+    List<UserRoleInMarathonDto> userMarathons { get; set; } = new List<UserRoleInMarathonDto>();
+    int userId = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (await authService.IsUserAuthenticated())
+        {
+            userId = await authService.GetUserId();
+            marathons = await marathonService.GetMarathons();
+            var userRoles = await userRoleInMarathonService.GetUserRolesInMarathon();
+            userMarathons = userRoles.Where(uM => uM.UserId == userId).ToList();
+            marathons = marathons.Where(m => userMarathons.Any(uM => uM.MarathonId == m.Id)).ToList();
+
+        }
+        else
+        {
+            Console.WriteLine("Not authorized");
+            navManager.NavigateTo("user/login");
+
+        }
+
+
+    }
+}

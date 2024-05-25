@@ -1,0 +1,34 @@
+﻿@page "/theme/add"
+@using System.Text.Json
+@inject IThemeService<ThemeDto,ThemeCreateDto> ThemeService
+@inject NavigationManager navigationManager
+@inject IMapper _mapper
+
+<PageTitle>Add theme</PageTitle>
+<EditForm Model="theme" OnSubmit="HandleSubmit" FormName="addTheme">
+    <div class="row mt-5 d-flex">
+        <div class="col-12 col-md-3 mx-auto shadow-sm">
+            <div class="form-group">
+                <h3>Add Theme</h3>
+            </div>
+            <div>
+                <label>Title</label>
+                <InputText class="form-control" @bind-Value="theme.Title"></InputText>
+            </div>
+            <br />
+            <div class="d-flex justify-content-center">
+                <button formmethod="post" type="submit" class="btn btn-primary">Create Theme</button>
+            </div>
+
+        </div>
+    </div>
+
+</EditForm>
+@code {
+    ThemeCreateDto theme = new ThemeCreateDto();
+    async Task HandleSubmit()
+    {
+        Console.WriteLine(JsonSerializer.Serialize(theme));
+        await ThemeService.AddTheme(theme);
+    }
+}

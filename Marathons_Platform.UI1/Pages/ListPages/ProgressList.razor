@@ -1,0 +1,50 @@
+﻿@page "/progress/get-all"
+@inject IMarathonService<MarathonDto, MarathonCreateDto, MarathonUpdateDto> MarathonService
+@inject IUserService<UserDto, UserCreateDto, UserUpdateDto> UserService
+@inject IProgressService<ProgressDto, ProgressCreateDto, ProgressAddDto> ProgressService
+@inject AuthService authService
+@inject NavigationManager navigationManager
+
+<h3 class="d-flex justify-content-center text-uppercase text-dark">Progresses</h3>
+<div class="mt-5 col-13 d-flex bg-dark flex-wrap justify-content-between px-5 py-3">
+    @foreach (var user in users)
+    {
+        <div class="row d-flex flex-column text-light col-lg-3 col-md-5 col-sm-9 mb-2 px-3 justify-content-around align-items-center">
+            <div>
+                <h4>User: @user.Name</h4>
+            </div>
+            <ul>
+                @foreach (var progress in progresses.Where(p => p.UserId == user.Id))
+                {
+                    var marathon = marathons.FirstOrDefault(m => m.Id == progress.MarathonId);
+
+                    <li>
+                        <p>Marathon: @marathon.Title</p>
+                        <p>Progress: @progress.Percent%</p>
+                    </li>
+                }
+            </ul>
+        </div>
+    }
+</div>
+
+@code {
+    List<ProgressDto> progresses { get; set; } = new List<ProgressDto>();
+    List<UserDto> users { get; set; } = new List<UserDto>();
+    List<MarathonDto> marathons { get; set; } = new List<MarathonDto>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (await authService.IsUserAuthenticated())
+        {
+            progresses = await ProgressService.GetProgresses();
+            users = await UserService.GetUsers();
+            marathons = await MarathonService.GetMarathons();
+        }
+        else
+        {
+            Console.WriteLine("Not authenticated");
+            navigationManager.NavigateTo("/notauth");
+        }
+    }
+}

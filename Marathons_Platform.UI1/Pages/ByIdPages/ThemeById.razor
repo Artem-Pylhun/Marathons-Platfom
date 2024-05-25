@@ -1,0 +1,45 @@
+﻿@page "/theme/{id:int}"
+@using System.Text.Json
+@inject IThemeService<ThemeDto,ThemeCreateDto> ThemeService
+@inject IMapper _mapper
+@inject NavigationManager navigationManager
+
+
+<PageTitle>Edit @theme.Title theme</PageTitle>
+<h3>Edit @theme.Title theme</h3>
+<EditForm Model="theme" OnSubmit="HandleEditSubmit" FormName="editTheme">
+    <div>
+        <label>Title</label>
+        <InputText @bind-Value="theme.Title" class="form-control"></InputText>
+    </div>
+    <br />
+    <button type="submit" class="btn btn-primary">Update Badge Info</button>
+</EditForm>
+
+@code {
+    [Parameter]
+    public int? Id { get; set; }
+    ThemeDto theme = new ThemeDto();
+    protected override async Task OnParametersSetAsync()
+    {
+        if (Id is not null)
+        {
+            var result = await ThemeService.GetThemeById((int)Id);
+            if (result is not null)
+            {
+                theme = result;
+
+            }
+            else
+            {
+                navigationManager.NavigateTo("/theme/add");
+            }
+        }
+    }
+    async Task HandleEditSubmit()
+    {
+        Console.WriteLine(JsonSerializer.Serialize(theme));
+        await ThemeService.UpdateTheme(theme);
+        Console.WriteLine("Updated");
+    }
+}

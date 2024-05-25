@@ -1,0 +1,84 @@
+﻿@page "/exercise/{id:int}"
+@using System.Text.Json
+@using Marathons_Platform.UI1.Pages
+@inject IMarathonService<MarathonDto,MarathonCreateDto, MarathonUpdateDto> MarathonService
+@inject IExerciseService<ExerciseDto,ExerciseCreateDto,ExerciseUpdateDto> ExerciseService
+@inject IMapper Mapper
+@inject NavigationManager NavigationManager
+
+<PageTitle>Edit @editExe.Title exercise </PageTitle>
+<EditForm Model="@editExe" OnValidSubmit="HandleEditSubmit" FormName="editExercise">
+    <h3>Edit @editExe.Title exercise</h3>
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+        <div>
+            <label>Title</label>
+            <InputText @bind-Value="editExe.Title" class="form-control"></InputText>
+        </div>
+        <div>
+            <label>Day number</label>
+            <InputNumber class="form-control col-5" @bind-Value="editExe.DayNum"></InputNumber>
+        </div>
+        <div>
+            <label>Marathon</label>
+            <InputSelect @bind-Value="editExe.MarathonId" class="form-control">
+                @if (editExe.MarathonId == 0)
+                {
+                    <option value="">none</option>
+                }
+                else
+                {
+                    <option value="@selectedMarathon?.Id">@selectedMarathon?.Title</option>
+                }
+                @foreach (var marathon in marathons)
+                {
+                    <option value="@marathon.Id">@marathon.Title</option>
+                }
+                @if (editExe.MarathonId != null)
+                {
+                    <option value="">none</option>
+                }
+            </InputSelect>
+        </div>
+        <div>
+            <label>Description</label>
+            <InputText @bind-Value="editExe.Description" class="form-control"></InputText>
+        </div>
+        <div>
+            <label>Video URL</label>
+            <InputText @bind-Value="editExe.URL" class="form-control"></InputText>
+        </div>
+        <br />
+
+        <button type="submit" class="btn btn-primary">Update Exercise Info</button>
+
+</EditForm>
+@code {
+    [Parameter]
+    public int? Id { get; set; }
+    ExerciseUpdateDto editExe { get; set; } = new ExerciseUpdateDto();
+    List<MarathonDto> marathons = new List<MarathonDto>();
+    MarathonDto selectedMarathon= new MarathonDto();
+    protected override async Task OnInitializedAsync()
+    {
+        if (Id is not null)
+        {
+            marathons = await MarathonService.GetMarathons();
+            var result = await ExerciseService.GetExerciseById((int)Id);
+            if (result is not null)
+            {
+                editExe = Mapper.Map<ExerciseUpdateDto>(result);
+                Console.WriteLine(JsonSerializer.Serialize(editExe));
+            }
+            else
+            {
+                NavigationManager.NavigateTo("/exercise/add");
+            }
+        }
+    }
+    async Task HandleEditSubmit()
+    {
+        await ExerciseService.UpdateExercise(editExe);
+    }
+
+}

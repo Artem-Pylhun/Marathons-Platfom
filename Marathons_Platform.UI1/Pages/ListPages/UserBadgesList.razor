@@ -1,0 +1,66 @@
+﻿@page "/userbadge/get-all"
+@inject IUserService<UserDto, UserCreateDto, UserUpdateDto> UserService
+@inject AuthService authService
+@inject IBadgeService<BadgeDto, BadgeCreateDto, BadgeUpdateDto> BadgeService
+@inject IUserBadgeService<UserBadgeDto, UserBadgeCreateDto> userBadgeService
+@inject NavigationManager navigationManager
+
+<link href="~/bootstrap/bootstrap.min.css">
+<h3 class="d-flex justify-content-center text-uppercase text-dark">User badges</h3>
+<div class="mt-5 col-13 d-flex flex-wrap bg-dark justify-content-between px-5 py-3">
+    @foreach (var user in users)
+    {
+        <div class="row d-flex flex-column text-light col-lg-3 col-md-5 col-sm-9 mb-2 px-3 align-items-center">
+            <div>
+                <h4>@user.Name @user.Surname</h4>
+            </div>
+            <ul>
+            
+            @foreach (var userBadge in userBadges.Where(u => u.UserId == user.Id))
+            {
+                var badge = badges.FirstOrDefault(b => b.Id == userBadge.BadgeId);
+               
+                <li>
+                    <p>@badge.Title</p>
+                        <p>When claimed:  @userBadge.Claimed</p>
+                </li>
+            }
+            </ul>
+        </div>
+    }
+</div>
+
+@code {
+    List<UserDto> users { get; set; } = new List<UserDto>();
+    List<BadgeDto> badges { get; set; } = new List<BadgeDto>();
+    List<UserBadgeDto> userBadges { get; set; } = new List<UserBadgeDto>();
+    Dictionary<int, List<string>> userRoles = new Dictionary<int, List<string>>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (await authService.IsUserAuthenticated())
+        {
+            userRoles = await authService.GetUserRoles();
+            bool isAdmin = userRoles.Any(role => role.Value.Contains("Admin"));
+
+            if (isAdmin)
+            {
+                
+                users = await UserService.GetUsers();
+                badges = await BadgeService.GetBadges();
+                userBadges = await userBadgeService.GetUserBadges();
+            }
+            else
+            {
+                Console.WriteLine("Not Admin");
+                navigationManager.NavigateTo("/forbid");
+            }
+        }
+        else
+        {
+            Console.WriteLine("Not authenticated");
+            navigationManager.NavigateTo("/notauth");
+        }
+        
+    }
+}

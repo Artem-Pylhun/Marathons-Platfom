@@ -1,0 +1,118 @@
+﻿@page "/exercise/get-all"
+@using System.Text.Json
+@inject IMarathonService<MarathonDto,MarathonCreateDto, MarathonUpdateDto> MarathonService
+@inject IExerciseService<ExerciseDto,ExerciseCreateDto,ExerciseUpdateDto> ExerciseService
+@inject IThemeService<ThemeDto,ThemeCreateDto> ThemeService
+@inject IMapper _mapper
+@inject NavigationManager navigationManager
+<link href ="~/bootstrap/bootstrap.min.css">
+<h3 class="d-flex justify-content-center text-uppercase text-dark">Exercises</h3>
+<div class="mt-5 col-13 d-flex flex-wrap bg-light justify-content-between px-5 py-3">
+    @foreach (var exercise in ExerciseService.Exercises)
+        {
+            <div class="row d-flex flex-column content-card profile-card col-lg-3 col-md-5 col-sm-9 mb-2 justify-content-around align-items-center">
+                <div class="info">
+                    <div>
+                        <h3>@exercise.Title</h3>
+                    </div>
+                    <p>@marathons.FirstOrDefault(m => m.Id == exercise.MarathonId).Title</p>
+                        <p>Day: @exercise.DayNum</p>
+                    </div>
+                    <div class="d-flex">
+                        <a class="btn btn-sm" href="/exercise/@exercise.Id">Edit</a>
+                        <a class="btn btn-sm" @onclick="()=> Delete(exercise.Id)">Delete</a>
+                </div>           
+
+            </div>
+        }
+ </div>
+ <div class="profile-card-create">
+    <a class="btn btn-sm content-card col-5" @onclick="CreateExercise">Create New Exercise</a>
+ </div>
+<style>
+h3{
+      background-color: #a3b6f9
+}
+.info
+{
+    
+    font-size: 1.2rem;
+}
+.profile-card{
+    background-color: #cce6ff;
+    box-shadow: rgba(0,0,0,0.24) 0px 3px 8px;
+    border-radius: 20px;
+}
+.profile-card h3 {
+    margin: 10px;
+    font-family: monospace;
+    font-size: 1.5rem;
+    background-color: transparent;
+    text-decoration-color:white;
+    text-align: center;
+}
+
+.profile-card p {
+    margin:0px 10px;
+    font-family: 'TimesNewRoman', Times, serif;
+}
+
+
+.profile-card a {
+    text-decoration: none;
+    margin: 5px 10px 10px 10px;
+    padding: 5px 15px;
+    align-self: center;
+    border: 1px solid #4b5d67;
+    border-radius: 15px;
+    color: black;
+    background-color: white;
+    font-family: monospace;
+    font-weight: 500;
+}
+
+    profile-card-create{
+        box-shadow: rgba(0,0,0,0.24) 0px 3px 8px;
+    }
+
+    .profile-card-create a {
+        text-decoration: none;
+        margin: 5px 10px 10px 10px;
+        padding: 5px 15px;
+        align-self: center;
+        border: 1px solid #4b5d67;
+        border-radius: 15px;
+        color: black;
+        background-color: white;
+        font-family: monospace;
+        font-weight: 500;
+    }
+.profile-card a:hover{
+    background-color: #4b5d67;
+    border: 1px solid black;
+
+}
+
+    .profile-card-create a:hover {
+        background-color: #4b5d67;
+        border: 1px solid black;
+    }
+</style>
+@code{
+    List<ExerciseDto> exercises { get; set; } = new List<ExerciseDto>();
+    List<MarathonDto> marathons { get; set; } = new List<MarathonDto>();
+    protected override async Task OnInitializedAsync()
+    {
+        marathons = await MarathonService.GetMarathons();
+        exercises = await ExerciseService.GetExercises();
+    }
+    async Task Delete(int id)
+    {
+        await ExerciseService.DelExercise(id);
+        navigationManager.NavigateTo("/exercise/get-all", forceLoad: true);
+    }
+    void CreateExercise()
+    {
+        navigationManager.NavigateTo("/exercise/add");
+    }
+}

@@ -1,0 +1,107 @@
+﻿@page "/marathon/edit/{id:int}"
+@using System.Text.Json
+@using Marathons_Platform.UI1.Pages
+@inject AuthService authService
+@inject IMarathonService<MarathonDto,MarathonCreateDto, MarathonUpdateDto> MarathonService
+@inject IThemeService<ThemeDto,ThemeCreateDto> ThemeService
+@inject IMapper Mapper
+@inject NavigationManager NavigationManager
+
+<PageTitle>Edit @editMar.Title marathon </PageTitle>
+<h3>Edit @editMar.Title marathon</h3>
+<EditForm Model="@editMar" OnValidSubmit="HandleEditSubmit" FormName="EditMarathon">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    <div>
+        <label>Title</label>
+        <InputText @bind-Value="editMar.Title" class="form-control"></InputText>
+    </div>
+    <div>
+        <label>Theme</label>
+        <InputSelect @bind-Value="editMar.ThemeId" class="form-control">
+            @if (editMar.ThemeId == 0)
+            {
+                <option value="">none</option>
+            }
+            else
+            {
+                <option value="@selectedTheme?.Id">@selectedTheme?.Title</option>
+            }
+            @foreach (var theme in themes)
+            {
+                <option value="@theme.Id">@theme.Title</option>
+            }
+            @if(editMar.ThemeId != null)
+            {
+                <option value="">none</option>
+            }
+        </InputSelect>
+    </div>
+    <div>
+        <label>Description</label>
+        <InputText @bind-Value="editMar.Description" class="form-control"></InputText>
+    </div>
+    <div>
+        <label>Date of start</label>
+        <InputDate @bind-Value="editMar.DateOfStart" class="form-control"></InputDate>
+    </div>
+    <div>
+        <label>Duration</label>
+        <InputNumber @bind-Value="editMar.Duration" class="form-control"></InputNumber>
+    </div>
+    <br />
+
+    <button type="submit" class="btn btn-primary">Update Marathon Info</button>
+
+</EditForm>
+
+@code {
+    [Parameter]
+    public int? Id { get; set; }
+    MarathonDto editMar{ get; set; } = new MarathonDto();
+    List<ThemeDto> themes = new List<ThemeDto>();
+    ThemeDto selectedTheme = new ThemeDto();
+    Dictionary<int, List<string>> userRoles = new Dictionary<int, List<string>>();
+    protected override async Task OnInitializedAsync()
+    {
+        userRoles = await authService.GetUserRoles();
+        if (await authService.IsUserAuthenticated() == true)
+        {
+            if ((userRoles.TryGetValue((int)Id, out var roles) && (roles.Contains("Manager"))) || userRoles.Any(entry => entry.Value.Contains("Admin")))
+        {
+                if (Id is not null)
+                {
+                    themes = await ThemeService.GetThemes();
+                    var result = await MarathonService.GetMarathonById((int)Id);
+                    if (result is not null)
+                    {
+                        editMar = Mapper.Map
+    <MarathonDto>(result);
+                        Console.WriteLine(JsonSerializer.Serialize(editMar));
+                    }
+                    else
+                    {
+                        NavigationManager.NavigateTo("/marathon/add");
+                    }
+                }
+            }
+            else
+            {
+                NavigationManager.NavigateTo("/forbid");
+                Console.WriteLine("You must be Manager or Admin to have access to marathon's settings");
+            }
+        }
+        else
+        {
+            NavigationManager.NavigateTo("/user/login");
+            Console.WriteLine("Unauthorised");
+        }
+
+    }
+    async Task HandleEditSubmit()
+    {
+        Console.WriteLine(JsonSerializer.Serialize(editMar));
+        await MarathonService.UpdateMarathon(editMar);
+        Console.WriteLine("Updated successfully");
+    }
+}

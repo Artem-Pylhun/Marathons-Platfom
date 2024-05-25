@@ -1,0 +1,65 @@
+﻿@page "/exercise/add"
+@using System.Text.Json
+@inject IMarathonService<MarathonDto,MarathonCreateDto, MarathonUpdateDto> MarathonService
+@inject IExerciseService<ExerciseDto,ExerciseCreateDto, ExerciseUpdateDto> ExerciseService
+@inject IMapper Mapper
+@inject NavigationManager NavigationManager
+
+<PageTitle>Create New exercise </PageTitle>
+<h3>Create new exercise</h3>
+<EditForm Model="@createExe" OnValidSubmit="HandleCreateSubmit" FormName="createExercise">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    <div>
+        <label>Title</label>
+        <InputText @bind-Value="createExe.Title" class="form-control"></InputText>
+    </div>
+    <div>
+        <label>Day number</label>
+        <InputNumber class="form-control col-5" @bind-Value="createExe.DayNum"></InputNumber>
+    </div>
+    <div>
+        <label>Marathon</label>
+        <InputSelect @bind-Value="createExe.MarathonId" class="form-control">
+            @if (createExe.MarathonId == null)
+            {
+                <option value="">Select marathon...</option>
+            }
+            else
+            {
+                <option value="@selectedMarathon?.Id">@selectedMarathon?.Title</option>
+            }
+            @foreach (var marathon in marathons)
+            {
+                <option value="@marathon.Id">@marathon.Title</option>
+            }
+        </InputSelect>
+    </div>
+    <div>
+        <label>Description</label>
+        <InputText @bind-Value="createExe.Description" class="form-control"></InputText>
+    </div>
+    <div>
+        <label>Video URL</label>
+        <InputText @bind-Value="createExe.URL" class="form-control"></InputText>
+    </div>
+    <br />
+
+    <button type="submit" class="btn btn-primary">Create Marathon</button>
+</EditForm>
+@code {
+    ExerciseCreateDto createExe { get; set; } = new ExerciseCreateDto();
+    List<MarathonDto> marathons = new List<MarathonDto>();
+    MarathonDto selectedMarathon= new MarathonDto();
+    protected override async Task OnInitializedAsync()
+    {
+        marathons = await MarathonService.GetMarathons();
+    }
+    async Task HandleCreateSubmit()
+    {
+        Console.WriteLine(JsonSerializer.Serialize(createExe));
+        await ExerciseService.AddExercise(createExe);
+        Console.WriteLine("Created successfully");
+    }
+
+}

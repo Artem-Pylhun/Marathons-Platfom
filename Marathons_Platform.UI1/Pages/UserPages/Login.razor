@@ -1,0 +1,45 @@
+﻿@page "/user/login"
+@using System.Text.Json
+@using Marathons_Platform.UI1.Auth
+@inject NavigationManager navigationManager
+@inject AuthService authService
+
+<PageTitle>Login</PageTitle>
+<h3 class="text-center py-5">Login</h3>
+<EditForm Model="user" class="d-flex flex-column justify-content-center align-items-center" OnSubmit="HandleLogSubmit" FormName="loginUser">
+    <div>
+        <label for="email">Email</label>
+        <InputText id="email" @bind-Value="user.Email" class="form-control"></InputText>
+    </div>
+    <div>
+        <label for="pass">Password</label>
+        <InputText id="pass" @bind-Value="user.Password" class="form-control" type="password"></InputText>
+    </div>
+    <br />
+    <button formmethod="post" type="submit" class="btn btn-primary">Login</button>
+    <br />
+    <button @onclick="()=>NavToReg()" class="text-center">Don't have an account?</button>
+</EditForm>
+
+@code
+{
+    UserLogDto user = new UserLogDto();
+    async Task HandleLogSubmit()
+    {
+        var result = await authService.Login(user);
+        Console.WriteLine(JsonSerializer.Serialize(result));
+        if (result == true)
+        {
+            Console.WriteLine("Login success");
+            navigationManager.NavigateTo("/", true);
+        }
+        else
+        {
+            Console.WriteLine("User not found");
+        }
+    }
+    async Task NavToReg()
+    {
+        navigationManager.NavigateTo("/user/register");
+    }
+}

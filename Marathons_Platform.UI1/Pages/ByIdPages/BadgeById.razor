@@ -1,0 +1,85 @@
+﻿@page "/badge/{id:int}"
+@using System.Text.Json
+@inject IBadgeService<BadgeDto,BadgeCreateDto, BadgeUpdateDto> BadgeService
+@inject IMapper _mapper
+@inject AuthService authService
+@inject NavigationManager NavigationManager
+
+
+<PageTitle>Edit @badge.Title badge</PageTitle>
+<h3>Edit @badge.Title badge</h3>
+<EditForm Model="badge" OnSubmit="HandleEditSubmit" FormName="EditBadge" >
+    <div>
+        <label for="title">Title</label>
+        <InputText @bind-Value="badge.Title" class="form-control" ></InputText>
+    </div>
+    <div>
+        <label for="description">Description</label>
+        <InputText @bind-Value="badge.Description" class="form-control" ></InputText>
+    </div>
+    <div>
+        <label for="photo">Image</label>
+        <InputFile  OnChange="GetPhoto" class="form-control"></InputFile>
+    </div>
+    <br />
+    <button type="submit" class="btn btn-primary">Update Badge Info</button>
+</EditForm>
+
+@code {
+    [Parameter]
+    public int? Id { get; set; }
+    BadgeUpdateDto badge = new BadgeUpdateDto();
+    Dictionary<int, List<string>> userRoles = new Dictionary<int, List<string>>();
+    protected override async Task OnInitializedAsync()
+    {
+        if (await authService.IsUserAuthenticated())
+        {
+            userRoles = await authService.GetUserRoles();
+            Console.WriteLine(JsonSerializer.Serialize(userRoles));
+            bool isAdmin = userRoles.Any(role => role.Value.Contains("Admin"));
+
+            if (isAdmin)
+            {
+            }
+            else
+            {
+                Console.WriteLine("Not authorized");
+                NavigationManager.NavigateTo("/notauth");
+            }
+        }
+        else
+        {
+            Console.WriteLine("Not authorized");
+        }
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (Id is not null)
+        {
+            var result = await BadgeService.GetBadgeById((int)Id);
+            if (result is not null)
+            {
+                badge = _mapper.Map<BadgeUpdateDto>(result);
+
+            }
+            else
+            {
+                NavigationManager.NavigateTo("/badge/add");
+            }
+        }
+    }
+    async Task HandleEditSubmit()
+    {
+
+        Console.WriteLine(JsonSerializer.Serialize(badge));
+        await BadgeService.UpdateBadge(badge);
+        Console.WriteLine("Updated");
+    }
+    public async Task GetPhoto(InputFileChangeEventArgs e)
+    {
+        var file = await e.File.ToBase64Async();
+        badge.BadgeImage = file;
+
+    }
+}

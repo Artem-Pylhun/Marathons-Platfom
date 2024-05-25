@@ -1,0 +1,67 @@
+﻿@page "/theme/get-all"
+@using System.Text.Json
+@inject IThemeService<ThemeDto,ThemeCreateDto> ThemeService
+@inject AuthService authService
+@inject NavigationManager navigationManager
+<link href="~/bootstrap/bootstrap.min.css">
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Title</th>
+            <th>Edit</th>
+            <th>Delete</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var theme in ThemeService.Themes)
+        {
+            <tr>
+                <td>@theme.Title</td>
+                <td>
+                    <a href="theme/@theme.Id" class="btn btn-primary btn-sm">Edit</a>
+                </td>
+                <td>
+                    <button class="btn btn-danger btn-sm" @onclick="()=> Delete(theme.Id)">Delete</button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+<button class="btn btn-primary btn-sm" @onclick="CreateTheme">Create New Theme</button>
+@code {
+    Dictionary<int, List<string>> userRoles = new Dictionary<int, List<string>>();
+    protected override async Task OnInitializedAsync()
+    {
+        if(await authService.IsUserAuthenticated())
+        {
+            userRoles = await authService.GetUserRoles();
+            Console.WriteLine(JsonSerializer.Serialize(userRoles));
+            bool isAdmin = userRoles.Any(role => role.Value.Contains("Admin"));
+
+            if(isAdmin)
+            {
+                await ThemeService.GetThemes();
+
+            }
+            else
+            {
+                Console.WriteLine("Not authorized");
+                navigationManager.NavigateTo("/notauth");
+            }
+        }
+        else
+        {
+            Console.WriteLine("Not authorized");
+        }
+    }
+    async Task Delete(int id)
+    {
+        await ThemeService.DelTheme(id);
+        navigationManager.NavigateTo("/theme/get-all", forceLoad: true);
+
+    }
+    void CreateTheme()
+    {
+       navigationManager.NavigateTo("/theme/add");
+    }
+}

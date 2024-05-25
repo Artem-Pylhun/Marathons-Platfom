@@ -1,0 +1,211 @@
+﻿@inject AuthService authService
+@inject NavigationManager navManager
+@page "/navbar"
+@using System.Text.Json
+<link href="~/bootstrap/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="~/lib/animate.css/animate.min.css">
+<nav>
+        <ul>
+
+            <li>
+                <a href="/" class="logo">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-activity" viewBox="0 0 16 16">
+                        <path fill-rule="evenodd" d="M6 2a.5.5 0 0 1 .47.33L10 12.036l1.53-4.208A.5.5 0 0 1 12 7.5h3.5a.5.5 0 0 1 0 1h-3.15l-1.88 5.17a.5.5 0 0 1-.94 0L6 3.964 4.47 8.171A.5.5 0 0 1 4 8.5H.5a.5.5 0 0 1 0-1h3.15l1.88-5.17A.5.5 0 0 1 6 2" />
+                    </svg>
+                    <span class="nav-item  animate__animated animate__fadeIn">Marathons</span>
+                </a>
+            </li>      
+            <li>
+                <a href="#" @onclick="() => GetProfile()" class="logo">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person-circle" viewBox="0 0 16 16">
+                        <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0" />
+                        <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1" />
+                    </svg>
+                    <span class="nav-item  animate__animated animate__fadeIn">Profile</span>
+                </a>
+            </li>
+            <li>
+            <a href="/joined-marathon" class="logo">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-card-list" viewBox="0 0 16 16">
+                        <path d="M14.5 3a.5.5 0 0 1 .5.5v9a.5.5 0 0 1-.5.5h-13a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5zm-13-1A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2z" />
+                        <path d="M5 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 5 8m0-2.5a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5m0 5a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5m-1-5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0M4 8a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0m0 2.5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0" />
+                    </svg>
+                    <span class="nav-item mar  animate__animated animate__fadeIn">    Joined Marathons</span>
+                </a>
+            </li>
+            <li>
+                <a href="/progresses" class="logo">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-bar-chart" viewBox="0 0 16 16">
+                        <path d="M4 11H2v3h2zm5-4H7v7h2zm5-5v12h-2V2zm-2-1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1zM6 7a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1zm-5 4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1z" />
+                    </svg>
+                    <span class="nav-item  animate__animated animate__fadeIn">Progress</span>
+
+                </a>
+            </li>
+            
+            
+            <li>
+                <a href="#" class="logout logo" @onclick="() => Logout()">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-box-arrow-left" viewBox="0 0 16 16">
+                        <path fill-rule="evenodd" d="M6 12.5a.5.5 0 0 0 .5.5h8a.5.5 0 0 0 .5-.5v-9a.5.5 0 0 0-.5-.5h-8a.5.5 0 0 0-.5.5v2a.5.5 0 0 1-1 0v-2A1.5 1.5 0 0 1 6.5 2h8A1.5 1.5 0 0 1 16 3.5v9a1.5 1.5 0 0 1-1.5 1.5h-8A1.5 1.5 0 0 1 5 12.5v-2a.5.5 0 0 1 1 0z" />
+                        <path fill-rule="evenodd" d="M.146 8.354a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L1.707 7.5H10.5a.5.5 0 0 1 0 1H1.707l2.147 2.146a.5.5 0 0 1-.708.708z" />
+                    </svg>
+                    <span class="nav-item  animate__animated animate__fadeIn">Log out</span>
+                </a>
+            </li>
+        </ul>
+</nav>
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        outline: 0;
+        border: none;
+        text-decoration: none;
+        box-sizing: border-box;
+        font-family: "Poppins", sans-serif;
+    }
+    li:hovered
+    {
+        span
+        {
+            animation-delay: 0.3s; 
+        }
+    }    
+    ul {
+        padding-left: 0px;
+    }
+    body {
+        background: #dfe9f5;
+    }
+
+    nav {
+        positions: fixed;
+        top: 0;
+        bottom: 0;
+        height: 100;
+        background: #fff;
+        width: 90px;
+        box-shadow: 0 20px 35px rgba(0,0,0,0.1)
+    }
+    nav:hover span{
+        visibility:visible;
+            animation-delay: 0.3s;
+        }
+    nav:not(:hover)
+    {
+        width: 90px;
+        transition: all 0.5s ease ;
+        height: 100vh
+    }
+    li{
+        text-align:center;
+    }
+    .icons{
+        width: 50px;
+        height:50px;
+    }
+    svg{
+        width: 45px;
+        height: 45px;
+    }    
+    .logo {
+        text-align: center;
+        display: flex;
+        transition: all 0.5s ease;
+        margin: 10px 0 0 10px;
+    }
+
+    .logo span {
+        font-weight: bold;
+        padding-left: 15px;
+        font-size: 18px;
+        text-transform: uppercase;
+        visibility:hidden;
+    }
+      
+    a {
+        color: rgb(85,83,83);
+        font-size: 14px;
+        display: table;
+        width: 280px;
+        padding: 10px;
+        text-decoration: none;
+        overflow: hidden;
+        display: table-cell;
+    }
+
+    .nav-item {
+        text-align: center;
+        display: flex;
+        margin: 10px 0 0 10px;
+    }
+
+        .nav-item span {
+        font-weight: bold;
+        padding-left: 15px;
+        font-size: 18px;
+        text-transform: uppercase;
+    }
+
+    a:hover {
+        background: #eee;
+    }
+
+    nav:hover {
+        width: 280px;
+        transition: all 0.5s ease;
+        height: 100vh;
+    }
+
+    .logout {
+        position: absolute;
+        bottom: 25px;
+    }
+</style>
+@code {
+    int Id { get; set; } = 0;
+    string userRole = string.Empty;
+    Dictionary<int, List<string>> userRoles = new Dictionary<int, List<string>>();
+    protected override async Task OnInitializedAsync()
+    {
+        await authService.CheckAndRemoveExpiredToken();
+        if (await authService.IsUserAuthenticated())
+        {
+            Id = await authService.GetUserId();
+            Console.WriteLine(JsonSerializer.Serialize(Id));
+            userRoles = await authService.GetUserRoles();
+            Console.WriteLine(JsonSerializer.Serialize(userRoles));
+            bool isAdmin = userRoles.Any(role => role.Value.Contains("Admin"));
+
+            if (isAdmin)
+            {
+                userRole = "Admin";
+            }
+        }
+        else
+        {
+            Console.WriteLine("Not authorized");
+            navManager.NavigateTo("user/login");
+
+        }
+    }
+    async Task GetProfile()
+    {
+        Id = await authService.GetUserId();
+        if (Id != 0)
+        {
+            navManager.NavigateTo($"/user/{Id}");
+        }
+        else
+        {
+            navManager.NavigateTo("user/login");
+        }
+
+    }
+    async Task Logout()
+        {
+            await authService.Logout();
+        } 
+    
+}

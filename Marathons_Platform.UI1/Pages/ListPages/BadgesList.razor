@@ -1,0 +1,71 @@
+﻿@page "/badge/get-all"
+@using System.Text.Json
+@inject AuthService authService
+@inject IBadgeService<BadgeDto,BadgeCreateDto, BadgeUpdateDto> BadgeService
+@inject NavigationManager navigationManager
+<link href="~/bootstrap/bootstrap.min.css">
+<h3 class="d-flex justify-content-center text-uppercase text-dark">Badges</h3>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Photo</th>
+            <th>Title</th>
+            <th>Description</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var badge in BadgeService.Badges)
+        {
+            <tr>
+                <td>
+                    <img class="w-50" src="http://localhost:5204/images/@badge.Photo" />
+                </td>
+                <td>@badge.Title</td>
+                <td>@badge.Description</td>
+                <td>
+                    <a class="btn btn-primary btn-sm" href="/badge/@badge.Id">Edit</a>
+                </td>
+                <td>
+                    <button class="btn btn-danger btn-sm" @onclick="()=> Delete(badge.Id)">Delete</button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+<button class="btn btn-primary btn-sm mx-5" @onclick="CreateBadge">Create New Badge</button>
+@code {
+    Dictionary<int, List<string>> userRoles = new Dictionary<int, List<string>>();
+    protected override async Task OnInitializedAsync()
+    {
+        if (await authService.IsUserAuthenticated())
+        {
+            userRoles = await authService.GetUserRoles();
+            Console.WriteLine(JsonSerializer.Serialize(userRoles));
+            bool isAdmin = userRoles.Any(role => role.Value.Contains("Admin"));
+
+            if (isAdmin)
+            {
+                await BadgeService.GetBadges();
+            }
+            else
+            {
+                Console.WriteLine("Not authorized");
+                navigationManager.NavigateTo("/notauth");
+            }
+        }
+        else
+        {
+            Console.WriteLine("Not authorized");
+        }
+    }
+    async Task Delete(int id)
+    {
+        await BadgeService.DelBadge(id);
+        navigationManager.NavigateTo("/badge/get-all", forceLoad: true);
+    }
+    void CreateBadge()
+    {
+        navigationManager.NavigateTo("/badge/add");
+    }
+}

@@ -1,0 +1,49 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.9.34310.174
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Marathons Platfom.Core", "Marathons Platfom.Core\Marathons Platfom.Core.csproj", "{4E21F868-43FC-444A-89C3-C8FC99D1B6AB}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Marathons Platform.API", "Marathons Platform\Marathons Platform.API.csproj", "{DA822D33-8F8B-4896-8B18-EEF1939AC0C1}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Marathons Platform.Domain", "Marathons Platform.Repositories\Marathons Platform.Domain.csproj", "{BFE0B6CB-C422-4DCE-83F6-374DEFB34C52}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Marathons_Platfom.UI2.Infrastructure", "Marathons_Platfom.UI2.Infrastructure\Marathons_Platfom.UI2.Infrastructure.csproj", "{A75B83DB-D256-4435-9471-BE2A3B8BF0C7}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Marathons_Platform.UI1", "Marathons_Platform.UI1\Marathons_Platform.UI1.csproj", "{D809488C-FFD3-40BE-B971-AA1401F74FC6}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{4E21F868-43FC-444A-89C3-C8FC99D1B6AB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4E21F868-43FC-444A-89C3-C8FC99D1B6AB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4E21F868-43FC-444A-89C3-C8FC99D1B6AB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4E21F868-43FC-444A-89C3-C8FC99D1B6AB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DA822D33-8F8B-4896-8B18-EEF1939AC0C1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DA822D33-8F8B-4896-8B18-EEF1939AC0C1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DA822D33-8F8B-4896-8B18-EEF1939AC0C1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DA822D33-8F8B-4896-8B18-EEF1939AC0C1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BFE0B6CB-C422-4DCE-83F6-374DEFB34C52}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BFE0B6CB-C422-4DCE-83F6-374DEFB34C52}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BFE0B6CB-C422-4DCE-83F6-374DEFB34C52}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BFE0B6CB-C422-4DCE-83F6-374DEFB34C52}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A75B83DB-D256-4435-9471-BE2A3B8BF0C7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A75B83DB-D256-4435-9471-BE2A3B8BF0C7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A75B83DB-D256-4435-9471-BE2A3B8BF0C7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A75B83DB-D256-4435-9471-BE2A3B8BF0C7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D809488C-FFD3-40BE-B971-AA1401F74FC6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D809488C-FFD3-40BE-B971-AA1401F74FC6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D809488C-FFD3-40BE-B971-AA1401F74FC6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D809488C-FFD3-40BE-B971-AA1401F74FC6}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {1E4C7EFB-4ED5-459C-A5D5-3375C0168BDA}
+	EndGlobalSection
+EndGlobal

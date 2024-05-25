@@ -1,0 +1,76 @@
+﻿@page "/badge/add"
+@using System.Text.Json
+@using Microsoft.AspNetCore.Http
+@inject IBadgeService<BadgeDto,BadgeCreateDto, BadgeUpdateDto> BadgeService;
+@inject AuthService authService
+@inject IMapper _mapper
+@inject NavigationManager navigationManager
+
+
+<PageTitle>Add badge</PageTitle>
+<EditForm Model="badge" OnSubmit="HandleSubmit" FormName="addBadge">
+    <div class="row mt-5 d-flex">
+        <div class="col-12 col-md-3 mx-auto shadow-sm">
+            <div class="form-group">
+                <h3>Add Badge</h3>
+            </div>
+            <div>
+                <label>Title</label>
+                <InputText class="form-control" @bind-Value="badge.Title"></InputText>
+            </div>
+            <div>
+                <label for"description">Description</label>
+                <InputText class="form-control" @bind-Value="badge.Description"></InputText>
+            </div>
+            <div>
+                <label for "filename">Photo</label>
+                <InputFile OnChange="@GetPhoto" class="form-control"></InputFile>
+            </div>
+            <br />
+            <div class="d-flex justify-content-center">
+                <button formmethod="post" type="submit" class="btn btn-primary">Create Badge</button>
+
+            </div>
+
+        </div>
+    </div>
+
+</EditForm>
+@code {
+    BadgeCreateDto badge = new BadgeCreateDto();
+    Dictionary<int, List<string>> userRoles = new Dictionary<int, List<string>>();
+    protected override async Task OnInitializedAsync()
+    {
+        if (await authService.IsUserAuthenticated())
+        {
+            userRoles = await authService.GetUserRoles();
+            Console.WriteLine(JsonSerializer.Serialize(userRoles));
+            bool isAdmin = userRoles.Any(role => role.Value.Contains("Admin"));
+
+            if (isAdmin)
+            {
+
+            }
+            else
+            {
+                Console.WriteLine("Not enough access");
+                navigationManager.NavigateTo("/forbid");
+            }
+        }
+        else
+        {
+            Console.WriteLine("Not authorized");
+        }
+    }
+    async Task HandleSubmit()
+    {
+        Console.WriteLine(JsonSerializer.Serialize(badge));
+        await BadgeService.AddBadge(badge);
+    }
+    public async Task GetPhoto(InputFileChangeEventArgs e)
+    {
+        var file = await e.File.ToBase64Async();
+        badge.BadgeImage = file;
+
+    }
+}

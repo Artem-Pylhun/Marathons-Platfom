@@ -1,0 +1,116 @@
+﻿@page "/"
+@using System.Text.Json
+@using Marathons_Platform.UI1.Auth
+@inject AuthService authService
+@inject IMarathonService<MarathonDto,MarathonCreateDto, MarathonUpdateDto> MarathonService
+@inject IProgressService<ProgressDto,ProgressCreateDto,ProgressAddDto> ProgressService
+@inject IUserRoleInMarathon<UserRoleInMarathonDto, UserRoleInMarathonCreateDto> UrinService
+@inject IThemeService<ThemeDto,ThemeCreateDto> ThemeService
+@inject IMapper _mapper
+@inject NavigationManager navigationManager
+<link href ="~/bootstrap/bootstrap.min.css">
+<h3 class="d-flex justify-content-center text-uppercase text-dark">Marathons we provide</h3>
+<div class="mt-5 col-13 d-flex flex-wrap bg-light justify-content-between px-5 py-3">
+    @foreach (var marathon in MarathonService.Marathons)
+        {
+            
+                <div class="row d-flex flex-column content-card profile-card col-lg-3 col-md-5 col-sm-9 mb-2 px-3 justify-content-around align-items-center">
+                    <div>
+                        <h3>@marathon.Title</h3>
+                    </div>
+                    <div class="info">
+                    <p>@themes.FirstOrDefault(t => t.Id == marathon.ThemeId)?.Title</p>
+                        <p>Date of start: @marathon.DateOfStart.ToShortDateString()</p>
+                        <p>Duration: @marathon.Duration days</p>
+                    </div>
+                    <div class="d-flex">
+
+                            <a class="btn btn-primary btn-sm" href="/marathon/@marathon.Id">Join</a>
+                            <a class="btn btn-primary btn-sm" href="/marathon/edit/@marathon.Id">Edit</a>
+
+                    </div>
+                </div>
+            
+        }
+ </div>
+<style>
+h3{
+      background-color: #a3b6f9
+}
+.info
+{
+ 
+    font-size: 1.3rem;
+}
+.profile-card{
+    background-color: #cce6ff;
+    box-shadow: rgba(0,0,0,0.24) 0px 3px 8px;
+    border-radius: 20px;
+}
+.profile-card h3 {
+    margin: 10px;
+    font-family: monospace;
+    font-size: 1.5rem;
+    background-color: transparent;
+    text-decoration-color:white;
+    text-align: center;
+}
+
+.profile-card p {
+    margin:0px 10px;
+    font-family: 'TimesNewRoman', Times, serif;
+}
+
+
+.profile-card a {
+    text-decoration: none;
+    margin: 5px 10px 10px 10px;
+    padding: 5px 15px;
+    align-self: center;
+    border: 1px solid #4b5d67;
+    border-radius: 15px;
+    color: black;
+    background-color: white;
+    font-family: monospace;
+    font-weight: 500;
+}
+.profile-card a:hover{
+    background-color: #4b5d67;
+    border: 1px solid black;
+
+}
+</style>
+@code {
+    ProgressDto prog = new ProgressDto(); 
+    List<ThemeDto> themes { get; set; } = new List<ThemeDto>();
+    List<MarathonDto> marathons { get; set; } = new List<MarathonDto>();
+    Dictionary<int, List<string>> userRoles = new Dictionary<int, List<string>>();
+    protected override async Task OnInitializedAsync()
+    {
+        if(await authService.IsUserAuthenticated() == true)
+        {
+            userRoles = await authService.GetUserRoles();
+            Console.WriteLine(JsonSerializer.Serialize(userRoles));
+            themes = await ThemeService.GetThemes();
+            marathons = await MarathonService.GetMarathons();
+        }
+        else
+        {
+            navigationManager.NavigateTo("/user/login");
+            Console.WriteLine("Unauthorised");
+        }
+    }
+    async Task CheckIfAuthorised()
+    {
+        if (await authService.IsUserAuthenticated() == false)
+        {
+            navigationManager.NavigateTo("/user/login");
+        }
+        else
+        {
+            Console.WriteLine("Success");
+        }
+    }
+    
+    
+}
